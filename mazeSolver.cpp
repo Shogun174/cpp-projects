@@ -15,7 +15,7 @@ int main()
 	SetRandomSeed(time(0));
 	//test data: (0 - path, 1 - wall)
 	Vector2 seeker = {1, 1}; //interpolated values
-	Vector2 target = {38, 18};
+	Vector2 target = {38, 20};
 	std::vector<std::vector<int>> maze = {
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
     {1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,1, 0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1},
@@ -46,6 +46,7 @@ int main()
 	const int offsetX = (screenWidth - mazeWidth) / 2;
 	const int offsetY = (screenHeight - mazeHeight) / 2;
 	const float moveTimerMax = 0.075;
+	bool allVisited = false; //to stop the seeker if a maze is unsolvable
 	float moveTimer = moveTimerMax; //seconds until the seeker moves
 	float timeElapsed = 0; 
 	std::vector<Vector2> dirs = {{1, 0}, {0, 1}, {-1, 0}, {0, -1}}; //four directions
@@ -65,7 +66,7 @@ int main()
 		if (t > 1.0f) t = 1.0f;
 		seeker = Vector2Lerp(seekerStart, nextPoint, t); //movement interpolation
 		//set a path point for the seeker:
-		if (!Vector2Equals(seeker, target) && moveTimer <= 0)
+		if (!Vector2Equals(seeker, target) && moveTimer <= 0 && !allVisited)
 		{
 			bool hasMoved = false; //for checking if backtracking is needed
 			moveTimer = moveTimerMax;
@@ -92,6 +93,22 @@ int main()
 						seekerStart = seeker;
 						visited[sum.y][sum.x] = true;
 						hasMoved = true;
+						//check if all squares have been visited:
+						allVisited = true;
+						for (size_t i = 0; i < visited.size(); i++)
+						{
+							for (size_t j = 0; j < visited[i].size(); j++)
+							{
+								//we need to check only walkable tiles: (0's)
+								if (!maze[i][j] && !visited[i][j])
+								{
+									allVisited = false;
+									break;
+								}
+							}
+							//break here if found a false:
+							if (!allVisited) break;
+						}
 						break; //avoid cases where there are multiple valid directions
 					}	
 				}
