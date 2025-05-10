@@ -21,7 +21,9 @@ enum ColorThreshold //magic numbers :P
 struct Game
 {
 	public:
-		int diff = 0; //default easy mode
+		//default difficulty:
+		int defAttempts = 20;
+		int defRange = 100;
 		unordered_map<int, function<void()>> menuOptions;
 		unordered_map<int, char> colors;
 		
@@ -51,25 +53,21 @@ struct Game
 				cout << "4. Exit\n";
 				validInput(input);
 				if (menuOptions.count(input)) menuOptions[input]();
-				else cout << "Invalid input.\n\n";
+				else cout << "Invalid input. Enter a positive number.\n\n";
 			}
 		}
 		
 		//game logic:
 		void start()
 		{
-			//difficulty scaling:
-			int attempts = 20;
-			int range = 30;
-			attempts -= diff * 5;
-			range *= (diff + 1);
+			int attempts = defAttempts;
+			int range = defRange;
 			bool running = true;
-			int number = rand() % (range + 1); //0 - range
-			
+			int number = rand() % (range + 1); //0 - range (both included)
 			//main loop:
 			while (running)
 			{	
-				cout << "\nGuess the number! (" << attempts << " att.)\n";
+				cout << "\nGuess the number! (" << attempts << " att. left)\n";
 				int input;	
 				validInput(input);
 				//did we guess it?
@@ -81,10 +79,11 @@ struct Game
 				}
 				else //wrong answer
 				{
+					//colored text: (windows only)
 					int d = abs(number - input); //difference
-					//colored text: (Windows only, kek)
 					for (int i = 1; i < 6; i++)
 					{
+						//using enums for color range calculation:
 						int limit = i * 4;
 						if (d <= limit) //change color every 4 numbers
 						{
@@ -102,8 +101,8 @@ struct Game
 				//game over:
 				if (attempts == 0)
 				{
-					system("color 7"); //back to white
 					running = false;
+					system("color 7"); //back to white
 					cout << "\nGame over! The correct number was: " << number << ".\n";
 					cout << "Better luck next time! :P\n";
 				}
@@ -112,34 +111,42 @@ struct Game
 		
 		void changeDifficulty()
 		{
-			int input;
-			cout << "\nCurrent difficulty: " << diff << " (0 - easy, 1 - medium, 2 - hard)\n";
-			cout << "Enter the new difficulty:\n";
-			validInput(input);
-			if (input == 0 || input == 1 || input == 2) //few options
-			{
-				diff = input;
-				cout << "Done!\n";
-			}
+			cout << "\nHere, you can change the number of guessing attempts and the range of the numbers.\n";
+			cout << "Current difficulty: " << defAttempts << " attempts, " << defRange << " is the highest possible number.\n";
+			cout << "Enter the new attempt number and the new maximum range:\n";
+			cout << "(numbers will be picked from the interval [0; new range])\n";
+			defAttempts = getPositiveInput();
+			defRange = getPositiveInput();
+			cout << "Changed the number of attempts! (now " << defAttempts << ")\n";
+			cout << "Changed the maximum range number! (now " << defRange << ")\n";
 		}
 		
 		void howToPlay() //info dump
 		{
 			cout << "\nHow to play:\n";
 			cout << "To win, you have to correctly guess the randomly generated number.\n";
-			cout << "How many attempts you have and the number range varies by difficulty.\n";
+			cout << "You can enter the number of attempts and the range of possible numbers in the 'Change Difficulty' section.\n";
 			cout << "The greener the text, the closer you are to guessing the number!\n";
 			cout << "Have fun! :P\n";
 		}
 	private: //helper functions
 		void validInput(int& input)
 		{
-			//prevent invalid inputs: (we need numbers only!)
+			//prevent invalid inputs: (we need positive numbers only!)
 			while (!(cin >> input))
 			{
 				cin.clear();
 				cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			}
+		}	
+		int getPositiveInput()
+		{
+			int input;
+			do {
+				validInput(input);
+				if (input <= 0) cout << "Invalid input. Enter a positive number.\n";
+			} while (input <= 0);
+			return input;
 		}
 };
 
