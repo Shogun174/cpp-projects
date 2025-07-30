@@ -1,8 +1,6 @@
 #include "Menu.hpp"
 #include "colors.hpp"
 
-enum MenuButton {START = 0, EXIT = 1};
-
 void Menu::handleInput(Board& board, GameState& state)
 {
 	Vector2 mouse = GetMousePosition();
@@ -19,13 +17,14 @@ void Menu::handleInput(Board& board, GameState& state)
 				{
 					case START:
 					{
+						currAnim = GetRandomValue(0, 3);
+						menuAnims.digits.clear();
+						menuAnims.spawnTimer = 0;
 						state = GAMEPLAY;
 						board.createNewPuzzle();
 						break;
 					}
-					case EXIT:
-						state = QUIT;
-						break;
+					case EXIT: state = QUIT; break;
 				}
 			}
 		}
@@ -35,15 +34,16 @@ void Menu::handleInput(Board& board, GameState& state)
 
 void Menu::update(float dt)
 {
-	//do animations later
+	menuAnims.update(dt, currAnim);
 }
 
 void Menu::draw()
 {
 	BeginDrawing();
+		menuAnims.draw();
 		ClearBackground(bgClearColor);
-		DrawText(titleText.c_str(), buttonX / 2 - 35, 100, 204, RED);
-		DrawText(titleText.c_str(), buttonX / 2 - 40, 100, 204, BLACK);
+		DrawText("SUDOKU", buttonX / 2 - 35, 100, 204, RED);
+		DrawText("SUDOKU", buttonX / 2 - 40, 100, 204, BLACK);
 		//buttons:
 		for (size_t i = 0; i < buttons.size(); i++)
 		{
@@ -52,11 +52,12 @@ void Menu::draw()
 			if (selButton == i) DrawRectangleRec(buttons[i], highlightColor);
 			DrawRectangleLinesEx(buttons[i], 3.0f, BLACK);
 			//draw labels:
-			if (i == START) DrawText(startText.c_str(), buttons[i].x + buttons[i].width / 6, buttons[i].y + 20, 90, BLACK);
-			else if (i == EXIT) DrawText(exitText.c_str(), buttons[i].x + buttons[i].width / 4, buttons[i].y + 20, 90, BLACK);
+			if (i == START) DrawText("Start", buttons[i].x + buttons[i].width / 6, buttons[i].y + 20, 90, BLACK);
+			else if (i == EXIT) DrawText("Exit", buttons[i].x + buttons[i].width / 4, buttons[i].y + 20, 90, BLACK);
 			//menu stats:
-			std::string solvedText = "You have solved " + std::to_string(solvedCount) + " puzzles!";
-			DrawText(solvedText.c_str(), buttonX - 30, 2 * buttonH + 55, 32, (solvedCount > 0 ? GREEN : RED));
+			std::string solvedText = "Puzzles solved: " + std::to_string(solvedCount);
+			DrawText(solvedText.c_str(), buttonX + 42, 2 * buttonH + 55, 32, (solvedCount > 0 ? GREEN : RED));
+			DrawText(solvedText.c_str(), buttonX + 40, 2 * buttonH + 55, 32, BLACK);
 		}
 	EndDrawing();
 }

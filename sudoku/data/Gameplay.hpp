@@ -13,9 +13,8 @@ class Gameplay
 		int mistakes = 0;
 		int selRow = -1;
 		int selCol = -1;
-		float timer = 0; //time elapsed solving
+		float timer = 0.0f; //time elapsed solving
 		bool solved = false;
-		bool solvedOnce = false;
 		void handleInput(Board& board, GameState& state, int& solvedCount);
 		void update(float dt, Board& board, Sound& music);
 		void draw(Board& board);
